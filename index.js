@@ -4,10 +4,11 @@ let express = require('express');
 let bodyparser = require('body-parser')
 let mongoose = require('mongoose');
 let urlExists = require('url-exists')
-
+let cors=require("cors")
 
 const app = express()
 app.use(express.static('public'));
+app.use(cors());
 app.set("view engine", "ejs")
 const port = 3000;
 app.use(bodyparser.urlencoded({ extended: true }))
