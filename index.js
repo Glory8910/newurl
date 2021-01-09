@@ -9,6 +9,12 @@ let cors = require("cors")
 const app = express()
 app.use(express.static('public'));
 app.use(cors());
+var corsOptions = {
+  origin: 'http://localhost:3000',
+  optionsSuccessStatus: 200 // For legacy browser support
+}
+
+app.use(cors(corsOptions));
 app.set("view engine", "ejs")
 const port = 3000;
 app.use(bodyparser.urlencoded({ extended: true }))
