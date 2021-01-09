@@ -4,7 +4,7 @@ let express = require('express');
 let bodyparser = require('body-parser')
 let mongoose = require('mongoose');
 let urlExists = require('url-exists')
-let cors=require("cors")
+let cors = require("cors")
 
 const app = express()
 app.use(express.static('public'));
@@ -15,12 +15,12 @@ app.use(bodyparser.urlencoded({ extended: true }))
 
 
 // Replace the uri string with your MongoDB deployment's connection string.
-const uri ="mongodb+srv://glo:glory1@task.53uqt.mongodb.net/task?retryWrites=true&w=majority"
+const uri = "mongodb+srv://glo:glory1@task.53uqt.mongodb.net/task?retryWrites=true&w=majority"
 
 
 
 // // mongoose.set('useNewUrlParser', true);
-mongoose.connect("uri");
+
 // let dbname="urlproject";
 
 // 
@@ -31,45 +31,62 @@ var { nanoid } = require("nanoid");
 var ID = nanoid(5);
 
 app.get("/", function (req, res) {
+  try {
+    mongoose.connect("uri");
 
+    let alldata = urlmodule.find(function (err, data) {
 
-  let alldata = urlmodule.find(function (err, data) {
-
-    res.render('home', { urls: data });
-  })
-
+      res.render('home', { urls: data });
+    })
+  }
+  catch {
+    console.log(err)
+  }
+  finally {
+    mongoose.disconnect();
+  }
 })
 
 
 
 app.post("/create", (req, res) => {
 
-  console.log(req.body.longurl)
 
-  urlExists(req.body.longurl, function (err, exists) {
-    if (!exists) {
-      console.log(exists, "ase")
-res.json({"message":"try with correct url"})
-    }
-    else {
-      console.log(exists, "ase"); // true
-      var myurl = new urlmodule({
-        longurl: req.body.longurl,
-        shorturl: ID
-      })
-      myurl.save(function (err, data) {
-        if (err) throw err
-        console.log(data);
-      });
-      res.json({ "message": "got the name" })
+  try {
 
-    }
+    mongoose.connect("uri");
+    console.log(req.body.longurl)
+
+    urlExists(req.body.longurl, function (err, exists) {
+      if (!exists) {
+        console.log(exists, "ase")
+        res.json({ "message": "try with correct url" })
+      }
+      else {
+        console.log(exists, "ase"); // true
+        var myurl = new urlmodule({
+          longurl: req.body.longurl,
+          shorturl: ID
+        })
+        myurl.save(function (err, data) {
+          if (err) throw err
+          console.log(data);
+        });
+        res.json({ "message": "got the name" })
+
+      }
 
     });
-  console.log(ID)
+    console.log(ID)
 
 
-
+  }
+  catch {
+    console.log(error);
+  }
+  finally {
+    mongoose.disconnect();
+  }
 
 })
 
@@ -77,48 +94,46 @@ res.json({"message":"try with correct url"})
 
 
 app.get("/:shortner", async function (req, res) {
-  await urlmodule.findOne({ shorturl: req.params.shortner }, async function (err, docs) {
-    if (err) {
-      console.log(err)
-    }
-    else {
-      console.log(docs.longurl, docs.count)
+  try {
+    await urlmodule.findOne({ shorturl: req.params.shortner }, async function (err, docs) {
+      if (err) {
+        console.log(err)
+      }
+      else {
+        console.log(docs.longurl, docs.count)
 
-      urlmodule.updateOne({ shorturl: req.params.shortner },
-        { "$inc": { count: 1 } }, function (err, docs) {
-          if (err) {
-            console.log(err)
-          }
-          else {
-            console.log("Updated Docs : ", docs);
-          }
-        });
+        urlmodule.updateOne({ shorturl: req.params.shortner },
+          { "$inc": { count: 1 } }, function (err, docs) {
+            if (err) {
+              console.log(err)
+            }
+            else {
+              console.log("Updated Docs : ", docs);
+            }
+          });
 
-      console.log(docs.count);
-
-
-      await res.redirect(docs.longurl);
-    }
-  });
+        console.log(docs.count);
 
 
-  app.get("/delete/:id", function (req, res) {
-
-
-    urlmodule.findByIdAndDelete({ _id: req.params.id }, function (err, data) {
-      if (err) throw err
-
-      res.redirect("/")
-
+        console.log(req.params.shortner);
+        await res.redirect(docs.longurl);
+      }
     });
 
+  }
+  catch {
+    console / log(error)
+  }
+  finally {
+    mongoose.disconnect();
+  }
 
 
-  })
 
-
-  console.log(req.params.shortner);
 })
+
+
+
 
 
 
